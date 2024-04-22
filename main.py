@@ -13,7 +13,10 @@ import random
 import time
 import json
 import numpy as np  # Import numpy library
+from flask_cors import CORS
+
 app = Flask(__name__)
+CORS(app, resources={r"/api/*": {"origins": "https://comet-scraper-cosrdqsat-stevenmaddelas-projects.vercel.app"}})
 
 
 @app.route('/')
