@@ -82,6 +82,71 @@ def get_stock_info():
  
 @app.route('/recommendations', methods=['GET'])
 def get_recommendations():
+    def calculate_sector_distribution(stock_list):
+        sector_counts = {}
+        sector_info = {}
+
+        # Read sector information from StockInfo.txt
+        with open(file_path, 'r') as file:
+            for line in file:
+                parts = line.strip().split(", ")
+                if len(parts) >= 3:
+                    sector = parts[-1]  # Get the last part as sector
+                    sector_counts[sector] = sector_counts.get(sector, 0)
+                    sector_info[parts[0]] = sector  # Store sector information for each stock
+
+        # Count occurrences of each sector in the input stock list
+        for stock in stock_list:
+            sector = sector_info.get(stock, "Unknown")
+            sector_counts[sector] = sector_counts.get(sector, 0) + 1
+
+        # Calculate the percentage distribution of sectors
+        total_stocks = len(stock_list)
+        sector_distribution = {sector: (count / total_stocks) * 100 for sector, count in sector_counts.items()}
+
+        return sector_distribution, sector_info
+
+    def pick_stocks_based_on_distribution(sector_distribution, total_stocks=100, existing_stocks=[]):
+        picked_stocks = []
+
+        # Pick stocks based on sector distribution percentages
+        for sector, percentage in sector_distribution.items():
+            num_stocks = int(total_stocks * (percentage / 100))
+            with open(file_path, 'r') as file:
+                stocks_in_sector = [line.split(", ")[0] for line in file if line.strip().endswith(sector)]
+                
+                # Exclude stocks that are already in existing_stocks
+                filtered_stocks = [stock for stock in stocks_in_sector if stock not in existing_stocks]
+                
+                picked_stocks.extend(random.sample(filtered_stocks, min(num_stocks, len(filtered_stocks))))
+
+        return picked_stocks
+
+    def get_stats(ticker):
+        info = yf.Tickers(ticker).tickers[ticker].info
+        return [ticker, info['currentPrice']]
+    
+    def get_change(ticker):
+        stock = yf.Ticker(ticker)
+        
+        # Get the intraday data for the current day
+        intraday_data = stock.history(period='1d', interval='1m')
+
+        # Access the most recent closing price (current value)
+        current_value = intraday_data['Close'].iloc[-1]
+
+        # Access the closing price from yesterday (second-to-last data point)
+        historical_data = stock.history(period='2d', interval='1d')
+        yesterday_close = historical_data['Close'].iloc[-2]
+
+        # Calculate the change in dollars
+        change_in_dollars = current_value - yesterday_close
+
+        # Calculate the percent change
+        percent_change = (change_in_dollars / yesterday_close) * 100
+        
+        return change_in_dollars, percent_change
+    
 
     # Return the array of arrays for the closest stocks
     return jsonify({
