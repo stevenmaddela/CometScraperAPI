@@ -161,7 +161,7 @@ def get_recommendations():
     total_stocks = len(FullStock_list)
 
     # Calculate the average price
-    average_price = total_price / total_stocks
+    average_price = total_price / total_stocks if total_price / total_stocks != 0 else 1
 
     # Calculate sector distribution and sector information
     sector_distribution, sector_info = calculate_sector_distribution(stock_list)
