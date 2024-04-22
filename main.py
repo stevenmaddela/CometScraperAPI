@@ -165,6 +165,15 @@ def get_recommendations():
     # Pick stocks based on sector distribution
     picked_stocks = pick_stocks_based_on_distribution(sector_distribution, existing_stocks=stock_list)
 
+    start_time = time.time()
+
+    stats_array = []
+
+    # Fetch stats for the picked stocks using multithreading
+    with ThreadPoolExecutor() as executor:
+        for stats in executor.map(get_stats, picked_stocks):
+            stats_array.append(stats)
+            
     # Return the array of arrays for the closest stocks
     return jsonify({
         'Array' : "stock_info_array",
