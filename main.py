@@ -3,7 +3,6 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from flask import Flask, request, jsonify, render_template
-from flask_cors import CORS
 import yfinance as yf;
 import numpy as np
 import requests
