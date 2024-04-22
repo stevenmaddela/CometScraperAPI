@@ -185,7 +185,19 @@ def get_recommendations():
     print(f"The program took {end_time - start_time:.2f} seconds.")
     print("Information for the closest stocks:")
     # Initialize an empty array to store the information for each stock
-            
+    stock_info_array = []
+
+    # Iterate over each stock in closest_stocks
+    for stock in closest_stocks:
+        ticker, price = stock
+        dchange, pchange = get_change(ticker)
+        sector = sector_info.get(ticker, "Unknown")
+        
+        # Append the information for the current stock to the stock_info_array
+        stock_info_array.append([ticker, price, dchange, pchange])
+
+    print(stock_info_array)
+    
     # Return the array of arrays for the closest stocks
     return jsonify({
         'Array' : total_stocks,
