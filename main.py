@@ -151,6 +151,20 @@ def get_recommendations():
     FullStock_list = json.loads(array_of_arrays_str)
     total_stocks = len(FullStock_list)
 
+    stock_list = [stock[0] for stock in FullStock_list]
+
+    # Calculate the total price and count of stocks
+    total_price = sum(stock[1] for stock in FullStock_list)
+
+    # Calculate the average price
+    average_price = total_price / total_stocks if total_price / total_stocks != 0 else 1
+
+    # Calculate sector distribution and sector information
+    sector_distribution, sector_info = calculate_sector_distribution(stock_list)
+
+    # Pick stocks based on sector distribution
+    picked_stocks = pick_stocks_based_on_distribution(sector_distribution, existing_stocks=stock_list)
+
     # Return the array of arrays for the closest stocks
     return jsonify({
         'Array' : "stock_info_array",
