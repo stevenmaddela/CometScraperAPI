@@ -23,8 +23,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 def index():
     return jsonify({"Choo Choo": "Welcome to your Flask app 🚅"})
 
-current_directory = os.path.dirname(__file__)
-
+file_path = os.path.join(os.path.dirname(__file__), 'StockInfo.txt')
 
 
 @app.route('/trending', methods=['GET'])
@@ -88,7 +87,7 @@ def get_recommendations():
         sector_info = {}
 
         # Read sector information from StockInfo.txt
-        with open( "StockInfo.txt", "r") as file:
+        with open(file_path, 'r') as file:
             for line in file:
                 parts = line.strip().split(", ")
                 if len(parts) >= 3:
@@ -113,7 +112,7 @@ def get_recommendations():
         # Pick stocks based on sector distribution percentages
         for sector, percentage in sector_distribution.items():
             num_stocks = int(total_stocks * (percentage / 100))
-            with open( "StockInfo.txt", "r") as file:
+            with open(file_path, 'r') as file:
                 stocks_in_sector = [line.split(", ")[0] for line in file if line.strip().endswith(sector)]
                 
                 # Exclude stocks that are already in existing_stocks
@@ -149,69 +148,63 @@ def get_recommendations():
         return change_in_dollars, percent_change
     
     
-    try:
-        # Printing out the array of arrays received from the URL
-        array_of_arrays_str = request.args.get('arrayOfArrays')
-        FullStock_list = json.loads(array_of_arrays_str)
-        print("Array of arrays received:", FullStock_list)
+    # Printing out the array of arrays received from the URL
+    array_of_arrays_str = request.args.get('arrayOfArrays')
+    FullStock_list = json.loads(array_of_arrays_str)
+    print("Array of arrays received:", FullStock_list)
 
-        stock_list = [stock[0] for stock in FullStock_list]
+    stock_list = [stock[0] for stock in FullStock_list]
 
-        # Calculate the total price and count of stocks
-        total_price = sum(stock[1] for stock in FullStock_list)
-        total_stocks = len(FullStock_list)
+    # Calculate the total price and count of stocks
+    total_price = sum(stock[1] for stock in FullStock_list)
+    total_stocks = len(FullStock_list)
 
-        # Calculate the average price
-        average_price = total_price / total_stocks if total_price / total_stocks != 0 else 1
+    # Calculate the average price
+    average_price = total_price / total_stocks if total_price / total_stocks != 0 else 1
 
-        # Calculate sector distribution and sector information
-        sector_distribution, sector_info = calculate_sector_distribution(stock_list)
+    # Calculate sector distribution and sector information
+    sector_distribution, sector_info = calculate_sector_distribution(stock_list)
 
-        # Pick stocks based on sector distribution
-        picked_stocks = pick_stocks_based_on_distribution(sector_distribution, existing_stocks=stock_list)
+    # Pick stocks based on sector distribution
+    picked_stocks = pick_stocks_based_on_distribution(sector_distribution, existing_stocks=stock_list)
 
-        # Fetch stats for the picked stocks using multithreading
-        start_time = time.time()
+    # Fetch stats for the picked stocks using multithreading
+    start_time = time.time()
 
-        stats_array = []
+    stats_array = []
 
-        # Fetch stats for the picked stocks using multithreading
-        with ThreadPoolExecutor() as executor:
-            for stats in executor.map(get_stats, picked_stocks):
-                stats_array.append(stats)
+    # Fetch stats for the picked stocks using multithreading
+    with ThreadPoolExecutor() as executor:
+        for stats in executor.map(get_stats, picked_stocks):
+            stats_array.append(stats)
 
-        # Sort the stats_array based on the absolute difference between each stock's price and the average_price
-        sorted_stats = sorted(stats_array, key=lambda x: abs(x[1] - average_price))
+    # Sort the stats_array based on the absolute difference between each stock's price and the average_price
+    sorted_stats = sorted(stats_array, key=lambda x: abs(x[1] - average_price))
 
-        # Select the top 8 closest stocks
-        closest_stocks = sorted_stats[:8]
+    # Select the top 8 closest stocks
+    closest_stocks = sorted_stats[:8]
 
-        end_time = time.time()
-        print("Average price of each stock:", average_price)
-        print(f"The program took {end_time - start_time:.2f} seconds.")
-        print("Information for the closest stocks:")
-        # Initialize an empty array to store the information for each stock
-        stock_info_array = []
+    end_time = time.time()
+    print("Average price of each stock:", average_price)
+    print(f"The program took {end_time - start_time:.2f} seconds.")
+    print("Information for the closest stocks:")
+    # Initialize an empty array to store the information for each stock
+    stock_info_array = []
 
-        # Iterate over each stock in closest_stocks
-        for stock in closest_stocks:
-            ticker, price = stock
-            dchange, pchange = get_change(ticker)
-            sector = sector_info.get(ticker, "Unknown")
-            
-            # Append the information for the current stock to the stock_info_array
-            stock_info_array.append([ticker, price, dchange, pchange])
+    # Iterate over each stock in closest_stocks
+    for stock in closest_stocks:
+        ticker, price = stock
+        dchange, pchange = get_change(ticker)
+        sector = sector_info.get(ticker, "Unknown")
+        
+        # Append the information for the current stock to the stock_info_array
+        stock_info_array.append([ticker, price, dchange, pchange])
 
-        print(stock_info_array)
+    print(stock_info_array)
 
-        # Return the array of arrays for the closest stocks
-        return jsonify(stock_info_array)
-    except Exception as e:
-        # Log the exception for debugging purposes
-        print(f"An error occurred: {e}")
-        # Return an error response
-        return jsonify({'error': {e}}), 500
-    
+    # Return the array of arrays for the closest stocks
+    return jsonify(stock_info_array)
+
 
 @app.route('/SingleRecommendation', methods=['GET'])
 def get_SingleRecommendations():
@@ -220,7 +213,7 @@ def get_SingleRecommendations():
         sector_info = {}
 
         # Read sector information from StockInfo.txt
-        with open( "StockInfo.txt", "r") as file:
+        with open(file_path, 'r') as file:
             for line in file:
                 parts = line.strip().split(", ")
                 if len(parts) >= 3:
@@ -245,7 +238,7 @@ def get_SingleRecommendations():
         # Pick stocks based on sector distribution percentages
         for sector, percentage in sector_distribution.items():
             num_stocks = int(total_stocks * (percentage / 100))
-            with open( "StockInfo.txt", "r") as file:
+            with open(file_path, 'r') as file:
                 stocks_in_sector = [line.split(", ")[0] for line in file if line.strip().endswith(sector)]
                 
                 # Exclude stocks that are already in existing_stocks
