@@ -23,11 +23,7 @@ def index():
 
 current_directory = os.path.dirname(__file__)
 
-# Construct the path to the StockInfo.txt file
 
-# Initialize the Flask app and enable CORS
-app = Flask(__name__)
-CORS(app)
 
 @app.route('/trending', methods=['GET'])
 def get_trending():
