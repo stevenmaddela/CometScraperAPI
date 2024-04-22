@@ -146,7 +146,10 @@ def get_recommendations():
         percent_change = (change_in_dollars / yesterday_close) * 100
         
         return change_in_dollars, percent_change
-    
+
+    array_of_arrays_str = request.args.get('arrayOfArrays')
+    FullStock_list = json.loads(array_of_arrays_str)
+    total_stocks = len(FullStock_list)
 
     # Return the array of arrays for the closest stocks
     return jsonify({
