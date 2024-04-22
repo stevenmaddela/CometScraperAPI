@@ -149,22 +149,15 @@ def get_recommendations():
     
     
     # Printing out the array of arrays received from the URL
-    # Printing out the array of arrays received from the URL
-    while True:
-        array_of_arrays_str = request.args.get('arrayOfArrays')
-        FullStock_list = json.loads(array_of_arrays_str)
-        total_stocks = len(FullStock_list)
-    
-        if total_stocks != 0:
-            break
-
-        # Introduce a delay of 0.1 seconds between iterations
-        time.sleep(0.1)
+    array_of_arrays_str = request.args.get('arrayOfArrays')
+    FullStock_list = json.loads(array_of_arrays_str)
+    print("Array of arrays received:", FullStock_list)
 
     stock_list = [stock[0] for stock in FullStock_list]
 
     # Calculate the total price and count of stocks
     total_price = sum(stock[1] for stock in FullStock_list)
+    total_stocks = len(FullStock_list)
 
     # Calculate the average price
     average_price = total_price / total_stocks if total_price / total_stocks != 0 else 1
