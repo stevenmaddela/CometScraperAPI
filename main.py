@@ -204,7 +204,8 @@ def get_recommendations():
     print(stock_info_array)
 
     # Return the array of arrays for the closest stocks
-    return stock_info_array
+    return jsonify(stock_info_array)
+
 
 @app.route('/SingleRecommendation', methods=['GET'])
 def get_SingleRecommendations():
@@ -329,7 +330,7 @@ def get_SingleRecommendations():
     print(stock_info_array)
 
     # Return the array of arrays for the closest stocks
-    return stock_info_array
+    return jsonify(stock_info_array)
 
 
     
