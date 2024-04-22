@@ -173,10 +173,22 @@ def get_recommendations():
     with ThreadPoolExecutor() as executor:
         for stats in executor.map(get_stats, picked_stocks):
             stats_array.append(stats)
+
+    # Sort the stats_array based on the absolute difference between each stock's price and the average_price
+    sorted_stats = sorted(stats_array, key=lambda x: abs(x[1] - average_price))
+
+    # Select the top 8 closest stocks
+    closest_stocks = sorted_stats[:8]
+
+    end_time = time.time()
+    print("Average price of each stock:", average_price)
+    print(f"The program took {end_time - start_time:.2f} seconds.")
+    print("Information for the closest stocks:")
+    # Initialize an empty array to store the information for each stock
             
     # Return the array of arrays for the closest stocks
     return jsonify({
-        'Array' : "stock_info_array",
+        'Array' : total_stocks,
     
     }
     )
