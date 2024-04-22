@@ -16,7 +16,7 @@ import numpy as np  # Import numpy library
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "https://comet-scraper-cosrdqsat-stevenmaddelas-projects.vercel.app"}})
+CORS(app, resources={r"/*": {"origins": "https://comet-scraper-cosrdqsat-stevenmaddelas-projects.vercel.app"}})
 
 
 @app.route('/')
