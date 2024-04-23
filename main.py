@@ -114,8 +114,9 @@ def get_recommendations():
         for sector, percentage in sector_distribution.items():
             num_stocks = int(total_stocks * (percentage / 100))
             with open(file_path, 'r') as file:
-             # Read all lines from the file and append them to file_contents
-                file_contents.extend(file.readlines())
+            # Read the file line by line
+                for line in file:
+                    file_contents.append(line.strip())
     
         return file_contents
 
