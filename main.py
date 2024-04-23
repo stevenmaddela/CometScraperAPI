@@ -107,8 +107,10 @@ def get_recommendations():
 
         return sector_distribution, sector_info
 
-    def pick_stocks_based_on_distribution(sector_distribution, total_stocks=100, existing_stocks=[]):
+    def pick_stocks_based_on_distribution(sector_distribution):
         picked_stocks = []
+        total_stocks=100
+        existing_stocks=[]
 
         # Pick stocks based on sector distribution percentages
         for sector, percentage in sector_distribution.items():
@@ -170,7 +172,7 @@ def get_recommendations():
     sector_distribution, sector_info = calculate_sector_distribution(stock_list)
 
     # Pick stocks based on sector distribution
-    picked_stocks = pick_stocks_based_on_distribution(sector_distribution, existing_stocks=stock_list)
+    picked_stocks = pick_stocks_based_on_distribution(sector_distribution)
 
     # Fetch stats for the picked stocks using multithreading
     start_time = time.time()
@@ -208,7 +210,7 @@ def get_recommendations():
 
     # Return the array of arrays for the closest stocks
     return jsonify({
-        'Array' : pick_stocks_based_on_distribution(sector_distribution, 100, existing_stocks=stock_list),
+        'Array' : pick_stocks_based_on_distribution(sector_distribution),
     }
     )
 
