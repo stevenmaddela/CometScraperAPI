@@ -17,6 +17,7 @@ import numpy as np  # Import numpy library
 import os
 from flask_cors import CORS
 
+file_path = os.path.join(os.path.dirname(__file__), 'StockInfo.txt')
 
 # Construct the path to the StockInfo.txt file
 
@@ -85,7 +86,7 @@ def get_recommendations():
         sector_info = {}
 
         # Read sector information from StockInfo.txt
-        with open( "StockInfo.txt", "r") as file:
+        with open(file_path, 'r') as file:
             for line in file:
                 parts = line.strip().split(", ")
                 if len(parts) >= 3:
@@ -110,7 +111,7 @@ def get_recommendations():
         # Pick stocks based on sector distribution percentages
         for sector, percentage in sector_distribution.items():
             num_stocks = int(total_stocks * (percentage / 100))
-            with open( "StockInfo.txt", "r") as file:
+            with open(file_path, 'r') as file:
                 stocks_in_sector = [line.split(", ")[0] for line in file if line.strip().endswith(sector)]
                 
                 # Exclude stocks that are already in existing_stocks
@@ -211,7 +212,7 @@ def get_SingleRecommendations():
         sector_info = {}
 
         # Read sector information from StockInfo.txt
-        with open( "StockInfo.txt", "r") as file:
+        with open(file_path, 'r') as file:
             for line in file:
                 parts = line.strip().split(", ")
                 if len(parts) >= 3:
@@ -236,7 +237,7 @@ def get_SingleRecommendations():
         # Pick stocks based on sector distribution percentages
         for sector, percentage in sector_distribution.items():
             num_stocks = int(total_stocks * (percentage / 100))
-            with open( "StockInfo.txt", "r") as file:
+            with open(file_path, 'r') as file:
                 stocks_in_sector = [line.split(", ")[0] for line in file if line.strip().endswith(sector)]
                 
                 # Exclude stocks that are already in existing_stocks
