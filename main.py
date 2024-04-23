@@ -528,19 +528,39 @@ def get_sentiment():
         # Assuming mean_neg, mean_neu, mean_pos, and average_compound_score are potentially nullable variables
 
     
+    if combined_triplets is None:
+    # Set combined_triplets to a default value
+        combined_triplets = [2,3]  # Or any other appropriate default value
+
+    if ((len(data) > 1) and (len(news_articles) > 1) and (len(article_texts) > 1) ):
+        return jsonify({
+            'Stock' : stock_ticker,
+            'Value' : current_value,
+            'yClose' : yesterday_close,
+            'dChange' : change_in_dollars,
+            'pChange' : percent_change,
+            'LBS' : long_business_summary,
+            'Close Prices': close_prices_list,
+            'ChartPointCt' : chartPointCt,
+        })
+
     return jsonify({
         'Stock' : stock_ticker,
         'Value' : current_value,
         'Count' : articleCt,
+        'Articles' : combined_triplets,
         'yClose' : yesterday_close,
         'dChange' : change_in_dollars,
         'pChange' : percent_change,
         'LBS' : long_business_summary,
+        'Neg': mean_neg,
+        'Neu': mean_neu,
+        'Pos': mean_pos,
+        'Compound Score': average_compound_score,
+        'Overall Sentiment': overall_score,
         'Close Prices': close_prices_list,
         'ChartPointCt' : chartPointCt,
     })
-
-
 
 
 # Running app
