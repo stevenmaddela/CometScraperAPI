@@ -1,6 +1,7 @@
 # Import relevant libraries
 import pandas as pd
 from bs4 import BeautifulSoup
+import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
