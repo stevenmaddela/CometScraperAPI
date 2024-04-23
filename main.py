@@ -205,7 +205,7 @@ def get_recommendations():
     
     # Return the array of arrays for the closest stocks
     return jsonify({
-        'Array' : stock_list,
+        'Array' : calculate_sector_distribution(stock_list),
     
     }
     )
