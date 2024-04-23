@@ -315,7 +315,6 @@ def get_sentiment():
     # Handle any exceptions that occur during news retrieval
         print(f"An error occurred while retrieving news articles: {e}")
 
-    news_articles = []
         
     GetStockInfo = yf.Ticker(stock_ticker)
 
@@ -351,7 +350,7 @@ def get_sentiment():
     article_dates = []
     articleCt = 0
 
-    if(news_articles):
+    if(len(news_articles) > 1):
 
         for i, article in enumerate(news_articles):
             if i >= 15:
@@ -410,7 +409,7 @@ def get_sentiment():
     data = []
     scores_list = []
 
-    if(article_texts):
+    if(len(article_texts) > 1):
         # Iterate through the list of article texts and titles
         for i, (article_title, article_text) in enumerate(article_texts):
             # Concatenate the title and text, treating the title as the first sentence
@@ -449,7 +448,7 @@ def get_sentiment():
     mean_neg = 0
     overall_score = 'nothing'
     average_compound_score = 0
-    if data:
+    if (len(data) > 1):
         # Create a DataFrame from the data list
         df = pd.DataFrame(data, columns=['Article Title', 'Sentiment Scores', 'Compound Score', 'Sentiment'])
 
@@ -478,7 +477,7 @@ def get_sentiment():
     # Set combined_triplets to a default value
         combined_triplets = []  # Or any other appropriate default value
 
-    if not data and not news_articles and not article_texts and not news_articles:
+    if ((len(data) > 1) and (len(news_articles) > 1) and (len(article_texts) > 1) ):
         return jsonify({
             'Stock' : stock_ticker,
             'Value' : current_value,
@@ -507,6 +506,7 @@ def get_sentiment():
         'Close Prices': close_prices_list,
         'ChartPointCt' : chartPointCt,
     })
+
 
 
 # Running app
