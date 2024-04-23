@@ -1,8 +1,9 @@
-import os
+# Import relevant libraries
 import pandas as pd
 from bs4 import BeautifulSoup
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 import yfinance as yf;
 import numpy as np
 import requests
@@ -13,19 +14,15 @@ import random
 import time
 import json
 import numpy as np  # Import numpy library
+import os
 from flask_cors import CORS
-import urllib.parse
 
+
+# Construct the path to the StockInfo.txt file
+
+# Initialize the Flask app and enable CORS
 app = Flask(__name__)
 CORS(app, resources={r"*": {"origins": "*"}})
-
-
-@app.route('/')
-def index():
-    return jsonify({"Choo Choo": "Welcome to your Flask app 🚅"})
-
-file_path = os.path.join(os.path.dirname(__file__), 'StockInfo.txt')
-
 
 @app.route('/trending', methods=['GET'])
 def get_trending():
@@ -207,7 +204,6 @@ def get_recommendations():
     return jsonify({'Array' : stock_info_array})
 
 
-
 @app.route('/SingleRecommendation', methods=['GET'])
 def get_SingleRecommendations():
     def calculate_sector_distribution(stock_list):
@@ -215,7 +211,7 @@ def get_SingleRecommendations():
         sector_info = {}
 
         # Read sector information from StockInfo.txt
-        with open(file_path, 'r') as file:
+        with open( "StockInfo.txt", "r") as file:
             for line in file:
                 parts = line.strip().split(", ")
                 if len(parts) >= 3:
@@ -240,7 +236,7 @@ def get_SingleRecommendations():
         # Pick stocks based on sector distribution percentages
         for sector, percentage in sector_distribution.items():
             num_stocks = int(total_stocks * (percentage / 100))
-            with open(file_path, 'r') as file:
+            with open( "StockInfo.txt", "r") as file:
                 stocks_in_sector = [line.split(", ")[0] for line in file if line.strip().endswith(sector)]
                 
                 # Exclude stocks that are already in existing_stocks
@@ -288,7 +284,7 @@ def get_SingleRecommendations():
     total_stocks = len(FullStock_list)
 
     # Calculate the average price
-    average_price = total_price / total_stocks
+    average_price = total_price / total_stocks if total_price / total_stocks != 0 else 1
 
     # Calculate sector distribution and sector information
     sector_distribution, sector_info = calculate_sector_distribution(stock_list)
@@ -331,11 +327,7 @@ def get_SingleRecommendations():
     print(stock_info_array)
 
     # Return the array of arrays for the closest stocks
-    return jsonify({
-        'Array' : stock_info_array,
-    
-    }
-    )
+    return jsonify(stock_info_array)
 
 
     
@@ -531,5 +523,6 @@ def get_sentiment():
     })
 
 
+# Running app
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
