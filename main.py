@@ -105,7 +105,7 @@ def get_recommendations():
         total_stocks = len(stock_list)
         sector_distribution = {sector: (count / total_stocks) * 100 for sector, count in sector_counts.items()}
 
-        return sector_distribution, sector_info
+        return sector_distribution
 
     def pick_stocks_based_on_distribution(sector_distribution, total_stocks=100, existing_stocks=[]):
         picked_stocks = []
@@ -162,10 +162,11 @@ def get_recommendations():
     total_price = sum(stock[1] for stock in FullStock_list)
 
     # Calculate the average price
-    average_price = total_price / total_stocks if total_price / total_stocks != 0 else 1
+    # Calculate the average price
+    average_price = total_price / total_stocks if total_stocks != 0 else 1
 
     # Calculate sector distribution and sector information
-    sector_distribution, sector_info = calculate_sector_distribution(stock_list)
+    sector_distribution = calculate_sector_distribution(stock_list)
 
     # Pick stocks based on sector distribution
     picked_stocks = pick_stocks_based_on_distribution(sector_distribution, existing_stocks=stock_list)
@@ -196,7 +197,6 @@ def get_recommendations():
     for stock in closest_stocks:
         ticker, price = stock
         dchange, pchange = get_change(ticker)
-        sector = sector_info.get(ticker, "Unknown")
         
         # Append the information for the current stock to the stock_info_array
         stock_info_array.append([ticker, price, dchange, pchange])
@@ -205,7 +205,7 @@ def get_recommendations():
     
     # Return the array of arrays for the closest stocks
     return jsonify({
-        'Array' : calculate_sector_distribution(stock_list),
+        'Array' : pick_stocks_based_on_distribution(calculate_sector_distribution(FullStock_list), 100, existing_stocks=stock_list ),
     
     }
     )
