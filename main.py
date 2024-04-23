@@ -88,7 +88,7 @@ def get_recommendations():
         sector_info = {}
 
         # Read sector information from StockInfo.txt
-        with open(file_path, 'r') as file:
+        with open( "StockInfo.txt", "r") as file:
             for line in file:
                 parts = line.strip().split(", ")
                 if len(parts) >= 3:
@@ -108,18 +108,20 @@ def get_recommendations():
         return sector_distribution, sector_info
 
     def pick_stocks_based_on_distribution(sector_distribution, total_stocks=100, existing_stocks=[]):
-        file_contents = []
-    
-    # Pick stocks based on sector distribution percentages
+        picked_stocks = []
+
+        # Pick stocks based on sector distribution percentages
         for sector, percentage in sector_distribution.items():
             num_stocks = int(total_stocks * (percentage / 100))
-            with open(file_path, 'r') as file:
-            # Read the file line by line
-                for line in file:
-                    file_contents.append(line.strip())
-    
-        return file_contents
+            with open( "StockInfo.txt", "r") as file:
+                stocks_in_sector = [line.split(", ")[0] for line in file if line.strip().endswith(sector)]
+                
+                # Exclude stocks that are already in existing_stocks
+                filtered_stocks = [stock for stock in stocks_in_sector if stock not in existing_stocks]
+                
+                picked_stocks.extend(random.sample(filtered_stocks, min(num_stocks, len(filtered_stocks))))
 
+        return picked_stocks
 
     def get_stats(ticker):
         info = yf.Tickers(ticker).tickers[ticker].info
@@ -148,18 +150,15 @@ def get_recommendations():
     
     
     # Printing out the array of arrays received from the URL
-    # Printing out the array of arrays received from the URL
     array_of_arrays_str = request.args.get('arrayOfArrays')
-    decoded_array_of_arrays_str = urllib.parse.unquote(array_of_arrays_str)
+    FullStock_list = json.loads(array_of_arrays_str)
+    print("Array of arrays received:", FullStock_list)
 
-    # Parse the JSON string to get the array of arrays
-    FullStock_list = json.loads(decoded_array_of_arrays_str)
-    total_stocks = len(FullStock_list)
-     
     stock_list = [stock[0] for stock in FullStock_list]
 
     # Calculate the total price and count of stocks
     total_price = sum(stock[1] for stock in FullStock_list)
+    total_stocks = len(FullStock_list)
 
     # Calculate the average price
     average_price = total_price / total_stocks if total_price / total_stocks != 0 else 1
@@ -168,7 +167,7 @@ def get_recommendations():
     sector_distribution, sector_info = calculate_sector_distribution(stock_list)
 
     # Pick stocks based on sector distribution
-    picked_stocks = pick_stocks_based_on_distribution(sector_distribution)
+    picked_stocks = pick_stocks_based_on_distribution(sector_distribution, existing_stocks=stock_list)
 
     # Fetch stats for the picked stocks using multithreading
     start_time = time.time()
@@ -205,10 +204,7 @@ def get_recommendations():
     print(stock_info_array)
 
     # Return the array of arrays for the closest stocks
-    return jsonify({
-        'Array' : pick_stocks_based_on_distribution(sector_distribution),
-    }
-    )
+    return jsonify({'Array' : stock_info_array})
 
 
 
