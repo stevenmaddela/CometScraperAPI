@@ -460,6 +460,42 @@ def get_sentiment():
     nltk.download('vader_lexicon')
     vader = SentimentIntensityAnalyzer() # or whatever you want to call it
 
+    data = []
+    scores_list = []
+
+    if(len(article_texts) > 1):
+        # Iterate through the list of article texts and titles
+        for i, (article_title, article_text) in enumerate(article_texts):
+            # Concatenate the title and text, treating the title as the first sentence
+            combined_text = article_title + ' ' + article_text
+            article_titles.append(article_title)
+            # Analyze the sentiment of the combined text
+            sentiment_scores = vader.polarity_scores(combined_text)
+
+            # Extract sentiment scores
+            compound_score = sentiment_scores['compound']
+            positive_score = sentiment_scores['pos']
+            negative_score = sentiment_scores['neg']
+            neutral_score = sentiment_scores['neu']
+            scores = [
+                ('positive_score', positive_score),
+                ('negative_score', negative_score),
+                ('neutral_score', neutral_score),
+                ('compound_score', compound_score)
+            ]
+            scores_list.append(scores)
+
+            # Determine sentiment based on the compound score
+            if compound_score >= 0.05:
+                sentiment = 'pos'
+            elif compound_score <= -0.05:
+                sentiment = 'neg'
+            else:
+                sentiment = 'neu'
+
+            # Append data to the list
+            data.append([article_title, sentiment_scores, compound_score, sentiment])
+
     
     return jsonify({
         'Stock' : stock_ticker,
