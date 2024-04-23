@@ -364,10 +364,41 @@ def get_sentiment():
         print("No 'longBusinessSummary' found in the dictionary.")# get all key value pairs that are available
 
 
-  
+    historical_data = stock.history(period='2d', interval='1d')
+
+    # Access the closing price from yesterday (second-to-last data point)
+    yesterday_close = float(historical_data['Close'].iloc[-2])
+
+    # Get the intraday data for the current day (as you've already done)
+    intraday_data = stock.history(period='1d', interval='1m')
+
+    # Access the most recent closing price (current value)
+# Access the most recent closing price (current value)
+    current_value = float(intraday_data['Close'].iloc[-1])  # Convert to float
+
+    # Calculate the change in dollars
+    change_in_dollars = current_value - yesterday_close
+
+    # Calculate the percent change
+    percent_change = (change_in_dollars / yesterday_close) * 100
+
+    article_links = []
+    article_texts = []
+    article_titles = []
+    article_publishers = []
+    article_dates = []
+    articleCt = 0
+
+    
+
     
     return jsonify({
         'Stock' : stock_ticker,
+        'Value' : current_value,
+        'Count' : articleCt,
+        'yClose' : yesterday_close,
+        'dChange' : change_in_dollars,
+        'pChange' : percent_change,
         'LBS' : long_business_summary,
         'Close Prices': close_prices_list,
         'ChartPointCt' : chartPointCt,
