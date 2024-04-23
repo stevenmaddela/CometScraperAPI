@@ -107,7 +107,7 @@ def get_recommendations():
 
         return sector_distribution, sector_info
 
-    def pick_stocks_based_on_distribution(sector_distribution, total_stocks=20, existing_stocks=[]):
+    def pick_stocks_based_on_distribution(sector_distribution, total_stocks=100, existing_stocks=[]):
         picked_stocks = []
 
         # Pick stocks based on sector distribution percentages
