@@ -119,7 +119,7 @@ def get_recommendations():
                 # Exclude stocks that are already in existing_stocks
                 filtered_stocks = [stock for stock in stocks_in_sector if stock not in existing_stocks]
                 
-                picked_stocks.extend("a")
+                picked_stocks.extend(random.sample(filtered_stocks, min(num_stocks, len(filtered_stocks))))
 
         return picked_stocks
 
