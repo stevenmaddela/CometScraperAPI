@@ -120,7 +120,7 @@ def get_recommendations():
                 
                 picked_stocks.extend(random.sample(filtered_stocks, min(num_stocks, len(filtered_stocks))))
 
-        return picked_stocks
+        return stocks_in_sector
 
 
     def get_stats(ticker):
@@ -208,7 +208,7 @@ def get_recommendations():
 
     # Return the array of arrays for the closest stocks
     return jsonify({
-        'Array' : calculate_sector_distribution(stock_list),
+        'Array' : pick_stocks_based_on_distribution(sector_distribution),
     }
     )
 
