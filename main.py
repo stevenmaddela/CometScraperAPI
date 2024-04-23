@@ -149,7 +149,11 @@ def get_recommendations():
         return change_in_dollars, percent_change
 
     array_of_arrays_str = request.args.get('arrayOfArrays')
-    FullStock_list = json.loads(urllib.parse.unquote(array_of_arrays_str))
+    decoded_array_of_arrays_str = urllib.parse.unquote(array_of_arrays_str)
+
+    # Parse the JSON string to get the array of arrays
+    FullStock_list = json.loads(decoded_array_of_arrays_str)
+
     total_stocks = len(FullStock_list)
 
     stock_list = [stock[0] for stock in FullStock_list]
