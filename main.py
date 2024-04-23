@@ -17,7 +17,8 @@ import numpy as np  # Import numpy library
 import os
 from flask_cors import CORS
 
-file_path = os.path.join(os.path.dirname(__file__), 'StockInfo.txt')
+base_dir = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(base_dir, 'StockInfo.txt')
 
 # Construct the path to the StockInfo.txt file
 
