@@ -238,7 +238,7 @@ def get_SingleRecommendations():
 
         return sector_distribution, sector_info
 
-    def pick_stocks_based_on_distribution(sector_distribution, total_stocks=40, existing_stocks=[]):
+    def pick_stocks_based_on_distribution(sector_distribution, total_stocks=30, existing_stocks=[]):
         picked_stocks = []
 
         # Pick stocks based on sector distribution percentages
@@ -495,6 +495,37 @@ def get_sentiment():
 
             # Append data to the list
             data.append([article_title, sentiment_scores, compound_score, sentiment])
+
+    combined_triplets = None
+    mean_neu = 0
+    mean_pos = 0
+    mean_neg = 0
+    overall_score = 'nothing'
+    average_compound_score = 0
+    if (len(data) > 1):
+        # Create a DataFrame from the data list
+        df = pd.DataFrame(data, columns=['Article Title', 'Sentiment Scores', 'Compound Score', 'Sentiment'])
+
+        # Calculate the mean values for 'neg', 'neu', and 'pos'
+        mean_neg = df['Sentiment Scores'].apply(lambda x: x['neg']).mean()
+        mean_neu = df['Sentiment Scores'].apply(lambda x: x['neu']).mean()
+        mean_pos = df['Sentiment Scores'].apply(lambda x: x['pos']).mean()
+        
+        # Calculate the mean 'Compound Score'
+        average_compound_score = df['Compound Score'].mean()
+
+
+        # Derive the overall sentiment score based on average polarity
+        if average_compound_score >= 0.05:
+            overall_score = 'positive'
+        elif average_compound_score <= -0.05:
+            overall_score = 'negative'
+        else:
+            overall_score = 'neutral'
+
+        combined_triplets = [{'href': link, 'title': title, 'score': score, 'info': info, 'date' : date} for link, title, score, info, date in zip(article_links, article_titles, scores_list, article_publishers, article_dates)]
+
+        # Assuming mean_neg, mean_neu, mean_pos, and average_compound_score are potentially nullable variables
 
     
     return jsonify({
