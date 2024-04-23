@@ -98,10 +98,29 @@ def get_recommendations():
         return picked_stocks
 
     def get_stats(ticker):
-        return [ticker, 0]
+        info = yf.Tickers(ticker).tickers[ticker].info
+        return [ticker, info['currentPrice']]
     
-    def get_change(ticker):   
-        return 0, 0
+    def get_change(ticker):
+        stock = yf.Ticker(ticker)
+        
+        # Get the intraday data for the current day
+        intraday_data = stock.history(period='1d', interval='1m')
+
+        # Access the most recent closing price (current value)
+        current_value = intraday_data['Close'].iloc[-1]
+
+        # Access the closing price from yesterday (second-to-last data point)
+        historical_data = stock.history(period='2d', interval='1d')
+        yesterday_close = historical_data['Close'].iloc[-2]
+
+        # Calculate the change in dollars
+        change_in_dollars = current_value - yesterday_close
+
+        # Calculate the percent change
+        percent_change = (change_in_dollars / yesterday_close) * 100
+        
+        return change_in_dollars, percent_change
     
     
     # Printing out the array of arrays received from the URL
@@ -155,8 +174,8 @@ def get_recommendations():
     print(stock_info_array)
 
     # Return the array of arrays for the closest stocks
-    return jsonify(stock_info_array)
-
+    return stock_info_array
+    
 @app.route('/SingleRecommendation', methods=['GET'])
 def get_SingleRecommendations():
     def calculate_sector_distribution(stock_list):
@@ -285,6 +304,7 @@ def get_SingleRecommendations():
 
     
 
+# Define a route for fetching sentiment analysis based on a stock ticker
 @app.route('/sentiment', methods=['GET'])
 def get_sentiment():
     # Retrieve the stock ticker from the query parameters
@@ -473,6 +493,18 @@ def get_sentiment():
     if combined_triplets is None:
     # Set combined_triplets to a default value
         combined_triplets = []  # Or any other appropriate default value
+
+    if not data and not news_articles and not article_texts and not news_articles:
+        return jsonify({
+            'Stock' : stock_ticker,
+            'Value' : current_value,
+            'yClose' : yesterday_close,
+            'dChange' : change_in_dollars,
+            'pChange' : percent_change,
+            'LBS' : long_business_summary,
+            'Close Prices': close_prices_list,
+            'ChartPointCt' : chartPointCt,
+        })
 
     return jsonify({
         'Stock' : stock_ticker,
