@@ -14,6 +14,7 @@ import time
 import json
 import numpy as np  # Import numpy library
 from flask_cors import CORS
+import urllib.parse
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -148,7 +149,7 @@ def get_recommendations():
         return change_in_dollars, percent_change
 
     array_of_arrays_str = request.args.get('arrayOfArrays')
-    FullStock_list = json.loads(array_of_arrays_str)
+    FullStock_list = json.loads(urllib.parse.unquote(array_of_arrays_str))
     total_stocks = len(FullStock_list)
 
     stock_list = [stock[0] for stock in FullStock_list]
