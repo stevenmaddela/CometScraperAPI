@@ -205,7 +205,7 @@ def get_recommendations():
     
     # Return the array of arrays for the closest stocks
     return jsonify({
-        'Array' : sorted_stats,
+        'Array' : picked_stocks,
     
     }
     )
