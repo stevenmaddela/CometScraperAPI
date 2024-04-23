@@ -532,7 +532,7 @@ def get_sentiment():
     # Set combined_triplets to a default value
         combined_triplets = [2,3]  # Or any other appropriate default value
 
-    if ((len(data) > 1) and (len(news_articles) > 1) and (len(article_texts) > 1) ):
+    if ((len(data) < 1) and (len(news_articles) < 1) and (len(article_texts) < 1) ):
         return jsonify({
             'Stock' : stock_ticker,
             'Value' : current_value,
