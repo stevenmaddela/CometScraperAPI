@@ -82,18 +82,43 @@ def get_stock_info():
  
 @app.route('/recommendations', methods=['GET'])
 def get_recommendations():
-    def pick_stocks_based_on_distribution(total_stocks=20, existing_stocks=[]):
+    def calculate_sector_distribution(stock_list):
+        sector_counts = {}
+        sector_info = {}
+
+        # Read sector information from StockInfo.txt
+        with open("StockInfo.txt", "r") as file:
+            for line in file:
+                parts = line.strip().split(", ")
+                if len(parts) >= 3:
+                    sector = parts[-1]  # Get the last part as sector
+                    sector_counts[sector] = sector_counts.get(sector, 0)
+                    sector_info[parts[0]] = sector  # Store sector information for each stock
+
+        # Count occurrences of each sector in the input stock list
+        for stock in stock_list:
+            sector = sector_info.get(stock, "Unknown")
+            sector_counts[sector] = sector_counts.get(sector, 0) + 1
+
+        # Calculate the percentage distribution of sectors
+        total_stocks = len(stock_list)
+        sector_distribution = {sector: (count / total_stocks) * 100 for sector, count in sector_counts.items()}
+
+        return sector_distribution, sector_info
+
+    def pick_stocks_based_on_distribution(sector_distribution, total_stocks=100, existing_stocks=[]):
         picked_stocks = []
 
-        # Read all stocks from StockInfo.txt
-        with open("StockInfo.txt", "r") as file:
-            all_stocks = [line.split(", ")[0] for line in file]
-
-        # Exclude stocks that are already in existing_stocks
-        filtered_stocks = [stock for stock in all_stocks if stock not in existing_stocks]
-
-        # Pick the specified number of stocks randomly
-        picked_stocks = random.sample(filtered_stocks, min(total_stocks, len(filtered_stocks)))
+        # Pick stocks based on sector distribution percentages
+        for sector, percentage in sector_distribution.items():
+            num_stocks = int(total_stocks * (percentage / 100))
+            with open("StockInfo.txt", "r") as file:
+                stocks_in_sector = [line.split(", ")[0] for line in file if line.strip().endswith(sector)]
+                
+                # Exclude stocks that are already in existing_stocks
+                filtered_stocks = [stock for stock in stocks_in_sector if stock not in existing_stocks]
+                
+                picked_stocks.extend(random.sample(filtered_stocks, min(num_stocks, len(filtered_stocks))))
 
         return picked_stocks
 
@@ -142,8 +167,11 @@ def get_recommendations():
     # Calculate the average price
     average_price = total_price / total_stocks
 
+    # Calculate sector distribution and sector information
+    sector_distribution, sector_info = calculate_sector_distribution(stock_list)
+
     # Pick stocks based on sector distribution
-    picked_stocks = pick_stocks_based_on_distribution(existing_stocks=stock_list)
+    picked_stocks = pick_stocks_based_on_distribution(sector_distribution, existing_stocks=stock_list)
 
     # Fetch stats for the picked stocks using multithreading
     start_time = time.time()
@@ -172,6 +200,7 @@ def get_recommendations():
     for stock in closest_stocks:
         ticker, price = stock
         dchange, pchange = get_change(ticker)
+        sector = sector_info.get(ticker, "Unknown")
         
         # Append the information for the current stock to the stock_info_array
         stock_info_array.append([ticker, price, dchange, pchange])
@@ -363,106 +392,19 @@ def get_sentiment():
     
     vader = SentimentIntensityAnalyzer() # or whatever you want to call it
 
-    data = []
-    scores_list = []
-
-    if(len(article_texts) > 1):
-        # Iterate through the list of article texts and titles
-        for i, (article_title, article_text) in enumerate(article_texts):
-            # Concatenate the title and text, treating the title as the first sentence
-            combined_text = article_title + ' ' + article_text
-            article_titles.append(article_title)
-            # Analyze the sentiment of the combined text
-            sentiment_scores = vader.polarity_scores(combined_text)
-
-            # Extract sentiment scores
-            compound_score = sentiment_scores['compound']
-            positive_score = sentiment_scores['pos']
-            negative_score = sentiment_scores['neg']
-            neutral_score = sentiment_scores['neu']
-            scores = [
-                ('positive_score', positive_score),
-                ('negative_score', negative_score),
-                ('neutral_score', neutral_score),
-                ('compound_score', compound_score)
-            ]
-            scores_list.append(scores)
-
-            # Determine sentiment based on the compound score
-            if compound_score >= 0.05:
-                sentiment = 'pos'
-            elif compound_score <= -0.05:
-                sentiment = 'neg'
-            else:
-                sentiment = 'neu'
-
-            # Append data to the list
-            data.append([article_title, sentiment_scores, compound_score, sentiment])
-
-    combined_triplets = None
-    mean_neu = 0
-    mean_pos = 0
-    mean_neg = 0
-    overall_score = 'nothing'
-    average_compound_score = 0
-    if (len(data) > 1):
-        # Create a DataFrame from the data list
-        df = pd.DataFrame(data, columns=['Article Title', 'Sentiment Scores', 'Compound Score', 'Sentiment'])
-
-        # Calculate the mean values for 'neg', 'neu', and 'pos'
-        mean_neg = df['Sentiment Scores'].apply(lambda x: x['neg']).mean()
-        mean_neu = df['Sentiment Scores'].apply(lambda x: x['neu']).mean()
-        mean_pos = df['Sentiment Scores'].apply(lambda x: x['pos']).mean()
-        
-        # Calculate the mean 'Compound Score'
-        average_compound_score = df['Compound Score'].mean()
-
-
-        # Derive the overall sentiment score based on average polarity
-        if average_compound_score >= 0.05:
-            overall_score = 'positive'
-        elif average_compound_score <= -0.05:
-            overall_score = 'negative'
-        else:
-            overall_score = 'neutral'
-
-        combined_triplets = [{'href': link, 'title': title, 'score': score, 'info': info, 'date' : date} for link, title, score, info, date in zip(article_links, article_titles, scores_list, article_publishers, article_dates)]
-
-        # Assuming mean_neg, mean_neu, mean_pos, and average_compound_score are potentially nullable variables
-
-    if combined_triplets is None:
-    # Set combined_triplets to a default value
-        combined_triplets = [2,3]  # Or any other appropriate default value
-
-    if ((len(data) > 1) and (len(article_texts) > 1) ):
-        return jsonify({
-            'Stock' : stock_ticker,
-            'Value' : current_value,
-            'yClose' : yesterday_close,
-            'dChange' : change_in_dollars,
-            'pChange' : percent_change,
-            'LBS' : long_business_summary,
-            'Close Prices': close_prices_list,
-            'ChartPointCt' : chartPointCt,
-        })
-
+    
     return jsonify({
         'Stock' : stock_ticker,
         'Value' : current_value,
         'Count' : articleCt,
-        'Articles' : combined_triplets,
         'yClose' : yesterday_close,
         'dChange' : change_in_dollars,
         'pChange' : percent_change,
         'LBS' : long_business_summary,
-        'Neg': mean_neg,
-        'Neu': mean_neu,
-        'Pos': mean_pos,
-        'Compound Score': average_compound_score,
-        'Overall Sentiment': overall_score,
         'Close Prices': close_prices_list,
         'ChartPointCt' : chartPointCt,
     })
+
 
 
 
