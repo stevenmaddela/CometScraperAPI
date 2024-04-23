@@ -115,11 +115,11 @@ def get_recommendations():
             num_stocks = int(total_stocks * (percentage / 100))
             with open(file_path, 'r') as file:
                 stocks_in_sector = [line.split(", ")[0] for line in file if line.strip().endswith(sector)]
-            
+                
                 # Exclude stocks that are already in existing_stocks
                 filtered_stocks = [stock for stock in stocks_in_sector if stock not in existing_stocks]
-            
-                picked_stocks.extend("aaaaa")
+                
+                picked_stocks.extend("a")
 
         return picked_stocks
 
