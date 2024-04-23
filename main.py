@@ -208,7 +208,7 @@ def get_recommendations():
 
     # Return the array of arrays for the closest stocks
     return jsonify({
-        'Array' : pick_stocks_based_on_distribution(sector_distribution, existing_stocks=stock_list),
+        'Array' : pick_stocks_based_on_distribution(sector_distribution, 100, existing_stocks=stock_list),
     }
     )
 
