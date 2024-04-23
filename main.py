@@ -302,6 +302,7 @@ def get_sentiment():
     chartPointCt =  len(close_prices_list)
 
 
+    news_articles = []
     try:
         news_articles = stock.news
         if news_articles is not None:
@@ -475,7 +476,7 @@ def get_sentiment():
 
     if combined_triplets is None:
     # Set combined_triplets to a default value
-        combined_triplets = []  # Or any other appropriate default value
+        combined_triplets = [2,3]  # Or any other appropriate default value
 
     if ((len(data) > 1) and (len(news_articles) > 1) and (len(article_texts) > 1) ):
         return jsonify({
