@@ -354,7 +354,19 @@ def get_sentiment():
     chartPointCt =  len(close_prices_list)
 
 
-
+    news_articles = []
+    try:
+        news_articles = stock.news
+        if news_articles is not None:
+        # Process news articles
+            pass
+        else:
+            news_articles = []
+        # Handle case where no news articles are available
+            pass
+    except Exception as e:
+    # Handle any exceptions that occur during news retrieval
+        print(f"An error occurred while retrieving news articles: {e}")
         
     GetStockInfo = yf.Ticker(stock_ticker)
 
