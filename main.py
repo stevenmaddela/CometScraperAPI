@@ -105,7 +105,7 @@ def get_recommendations():
         total_stocks = len(stock_list)
         sector_distribution = {sector: (count / total_stocks) * 100 for sector, count in sector_counts.items()}
 
-        return sector_distribution
+        return sector_distribution, sector_info
 
     def pick_stocks_based_on_distribution(sector_distribution, total_stocks=100, existing_stocks=[]):
         picked_stocks = []
@@ -147,30 +147,32 @@ def get_recommendations():
         percent_change = (change_in_dollars / yesterday_close) * 100
         
         return change_in_dollars, percent_change
-
+    
+    
+    # Printing out the array of arrays received from the URL
+    # Printing out the array of arrays received from the URL
     array_of_arrays_str = request.args.get('arrayOfArrays')
     decoded_array_of_arrays_str = urllib.parse.unquote(array_of_arrays_str)
 
     # Parse the JSON string to get the array of arrays
     FullStock_list = json.loads(decoded_array_of_arrays_str)
-
     total_stocks = len(FullStock_list)
-
+     
     stock_list = [stock[0] for stock in FullStock_list]
 
     # Calculate the total price and count of stocks
     total_price = sum(stock[1] for stock in FullStock_list)
 
     # Calculate the average price
-    # Calculate the average price
-    average_price = total_price / total_stocks if total_stocks != 0 else 1
+    average_price = total_price / total_stocks if total_price / total_stocks != 0 else 1
 
     # Calculate sector distribution and sector information
-    sector_distribution = calculate_sector_distribution(stock_list)
+    sector_distribution, sector_info = calculate_sector_distribution(stock_list)
 
     # Pick stocks based on sector distribution
     picked_stocks = pick_stocks_based_on_distribution(sector_distribution, existing_stocks=stock_list)
 
+    # Fetch stats for the picked stocks using multithreading
     start_time = time.time()
 
     stats_array = []
@@ -197,16 +199,16 @@ def get_recommendations():
     for stock in closest_stocks:
         ticker, price = stock
         dchange, pchange = get_change(ticker)
+        sector = sector_info.get(ticker, "Unknown")
         
         # Append the information for the current stock to the stock_info_array
         stock_info_array.append([ticker, price, dchange, pchange])
 
     print(stock_info_array)
-    
+
     # Return the array of arrays for the closest stocks
     return jsonify({
-        'Array' : pick_stocks_based_on_distribution(calculate_sector_distribution(FullStock_list), 100, existing_stocks=stock_list ),
-    
+        'Array' : pick_stocks_based_on_distribution(sector_distribution, existing_stocks=stock_list),
     }
     )
 
