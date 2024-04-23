@@ -334,7 +334,6 @@ def get_SingleRecommendations():
 
     
 
-# Define a route for fetching sentiment analysis based on a stock ticker
 @app.route('/sentiment', methods=['GET'])
 def get_sentiment():
     # Retrieve the stock ticker from the query parameters
@@ -350,12 +349,22 @@ def get_sentiment():
 
     try:
         news_articles = stock.news
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON: {e}")
-        news_articles = []
+        if news_articles is not None:
+        # Process news articles
+            pass
+        else:
+            news_articles = []
+        # Handle case where no news articles are available
+            pass
+    except Exception as e:
+    # Handle any exceptions that occur during news retrieval
+        print(f"An error occurred while retrieving news articles: {e}")
+
+    news_articles = []
         
     GetStockInfo = yf.Ticker(stock_ticker)
 
+    long_business_summary = "LBS"
     if 'longBusinessSummary' in GetStockInfo.info:
         long_business_summary = GetStockInfo.info['longBusinessSummary']
     else:
@@ -387,125 +396,133 @@ def get_sentiment():
     article_dates = []
     articleCt = 0
 
-    for i, article in enumerate(news_articles):
-        if i >= 15:
-            break
+    if(news_articles):
 
-        try:
-            # Fetch the article content using requests and BeautifulSoup
-            response = requests.get(article['link'])
-            soup = BeautifulSoup(response.text, 'html.parser')
+        for i, article in enumerate(news_articles):
+            if i >= 15:
+                break
 
-            # Find and print the article body text
-            article_body = soup.find('div', class_='caas-body')
-            if article_body:
-                article_title = article['title']
-                article_text = article_body.get_text()
-                article_texts.append((article_title, article_text))
-                articleCt = articleCt + 1
-                article_links.append(article['link'])
-                article_publishers.append(article['publisher'])
-                providerpublishtime = datetime.utcfromtimestamp( article['providerPublishTime'])
-                current_time = datetime.utcnow()
-                time_difference = current_time - providerpublishtime
+            try:
+                # Fetch the article content using requests and BeautifulSoup
+                response = requests.get(article['link'])
+                soup = BeautifulSoup(response.text, 'html.parser')
 
-                # If the article was published on the same day, display the time in hours
-                if time_difference.days == 0:
-                    hours_ago = time_difference.seconds // 3600  # Convert seconds to hours
-                    if hours_ago == 0:
-                        # If less than an hour ago, calculate and display minutes
-                        minutes_ago = (time_difference.seconds % 3600) // 60
-                        if minutes_ago == 0:
-                            formatted_time = "Just now"
-                        elif minutes_ago == 1:
-                            formatted_time = "1 minute ago"
+                # Find and print the article body text
+                article_body = soup.find('div', class_='caas-body')
+                if article_body:
+                    article_title = article['title']
+                    article_text = article_body.get_text()
+                    article_texts.append((article_title, article_text))
+                    articleCt = articleCt + 1
+                    article_links.append(article['link'])
+                    article_publishers.append(article['publisher'])
+                    providerpublishtime = datetime.utcfromtimestamp( article['providerPublishTime'])
+                    current_time = datetime.utcnow()
+                    time_difference = current_time - providerpublishtime
+
+                    # If the article was published on the same day, display the time in hours
+                    if time_difference.days == 0:
+                        hours_ago = time_difference.seconds // 3600  # Convert seconds to hours
+                        if hours_ago == 0:
+                            # If less than an hour ago, calculate and display minutes
+                            minutes_ago = (time_difference.seconds % 3600) // 60
+                            if minutes_ago == 0:
+                                formatted_time = "Just now"
+                            elif minutes_ago == 1:
+                                formatted_time = "1 minute ago"
+                            else:
+                                formatted_time = f"{minutes_ago} minutes ago"
+                        elif hours_ago == 1:
+                            formatted_time = "1 hour ago"
                         else:
-                            formatted_time = f"{minutes_ago} minutes ago"
-                    elif hours_ago == 1:
-                        formatted_time = "1 hour ago"
+                            formatted_time = f"{hours_ago} hours ago"
+                    elif time_difference.days == 1:
+                        formatted_time = "1 day ago"
                     else:
-                        formatted_time = f"{hours_ago} hours ago"
-                elif time_difference.days == 1:
-                    formatted_time = "1 day ago"
+                        # If not the same day, display days
+                        formatted_time = f"{time_difference.days} days ago"
+
+                    article_dates.append(formatted_time)
+                    #print("-" * 50)
                 else:
-                    # If not the same day, display days
-                    formatted_time = f"{time_difference.days} days ago"
+                    print("Article body not found on the page.")
 
-                article_dates.append(formatted_time)
-                #print("-" * 50)
-            else:
-                print("Article body not found on the page.")
-
-        except Exception as e:
-            print(f"Error processing article: {str(e)}")
+            except Exception as e:
+                print(f"Error processing article: {str(e)}")
 
     vader = SentimentIntensityAnalyzer() # or whatever you want to call it
 
     data = []
     scores_list = []
 
-    # Iterate through the list of article texts and titles
-    for i, (article_title, article_text) in enumerate(article_texts):
-        # Concatenate the title and text, treating the title as the first sentence
-        combined_text = article_title + ' ' + article_text
-        article_titles.append(article_title)
-        # Analyze the sentiment of the combined text
-        sentiment_scores = vader.polarity_scores(combined_text)
+    if(article_texts):
+        # Iterate through the list of article texts and titles
+        for i, (article_title, article_text) in enumerate(article_texts):
+            # Concatenate the title and text, treating the title as the first sentence
+            combined_text = article_title + ' ' + article_text
+            article_titles.append(article_title)
+            # Analyze the sentiment of the combined text
+            sentiment_scores = vader.polarity_scores(combined_text)
 
-        # Extract sentiment scores
-        compound_score = sentiment_scores['compound']
-        positive_score = sentiment_scores['pos']
-        negative_score = sentiment_scores['neg']
-        neutral_score = sentiment_scores['neu']
-        scores = [
-            ('positive_score', positive_score),
-            ('negative_score', negative_score),
-            ('neutral_score', neutral_score),
-            ('compound_score', compound_score)
-        ]
-        scores_list.append(scores)
+            # Extract sentiment scores
+            compound_score = sentiment_scores['compound']
+            positive_score = sentiment_scores['pos']
+            negative_score = sentiment_scores['neg']
+            neutral_score = sentiment_scores['neu']
+            scores = [
+                ('positive_score', positive_score),
+                ('negative_score', negative_score),
+                ('neutral_score', neutral_score),
+                ('compound_score', compound_score)
+            ]
+            scores_list.append(scores)
 
-        # Determine sentiment based on the compound score
-        if compound_score >= 0.05:
-            sentiment = 'pos'
-        elif compound_score <= -0.05:
-            sentiment = 'neg'
+            # Determine sentiment based on the compound score
+            if compound_score >= 0.05:
+                sentiment = 'pos'
+            elif compound_score <= -0.05:
+                sentiment = 'neg'
+            else:
+                sentiment = 'neu'
+
+            # Append data to the list
+            data.append([article_title, sentiment_scores, compound_score, sentiment])
+
+    combined_triplets = None
+    mean_neu = 0
+    mean_pos = 0
+    mean_neg = 0
+    overall_score = 'nothing'
+    average_compound_score = 0
+    if data:
+        # Create a DataFrame from the data list
+        df = pd.DataFrame(data, columns=['Article Title', 'Sentiment Scores', 'Compound Score', 'Sentiment'])
+
+        # Calculate the mean values for 'neg', 'neu', and 'pos'
+        mean_neg = df['Sentiment Scores'].apply(lambda x: x['neg']).mean()
+        mean_neu = df['Sentiment Scores'].apply(lambda x: x['neu']).mean()
+        mean_pos = df['Sentiment Scores'].apply(lambda x: x['pos']).mean()
+        
+        # Calculate the mean 'Compound Score'
+        average_compound_score = df['Compound Score'].mean()
+
+
+        # Derive the overall sentiment score based on average polarity
+        if average_compound_score >= 0.05:
+            overall_score = 'positive'
+        elif average_compound_score <= -0.05:
+            overall_score = 'negative'
         else:
-            sentiment = 'neu'
+            overall_score = 'neutral'
 
-        # Append data to the list
-        data.append([article_title, sentiment_scores, compound_score, sentiment])
+        combined_triplets = [{'href': link, 'title': title, 'score': score, 'info': info, 'date' : date} for link, title, score, info, date in zip(article_links, article_titles, scores_list, article_publishers, article_dates)]
 
-    # Create a DataFrame from the data list
-    df = pd.DataFrame(data, columns=['Article Title', 'Sentiment Scores', 'Compound Score', 'Sentiment'])
+        # Assuming mean_neg, mean_neu, mean_pos, and average_compound_score are potentially nullable variables
 
-    # Calculate the mean values for 'neg', 'neu', and 'pos'
-    mean_neg = df['Sentiment Scores'].apply(lambda x: x['neg']).mean()
-    mean_neu = df['Sentiment Scores'].apply(lambda x: x['neu']).mean()
-    mean_pos = df['Sentiment Scores'].apply(lambda x: x['pos']).mean()
-    
-    # Calculate the mean 'Compound Score'
-    average_compound_score = df['Compound Score'].mean()
+    if combined_triplets is None:
+    # Set combined_triplets to a default value
+        combined_triplets = []  # Or any other appropriate default value
 
-
-    # Derive the overall sentiment score based on average polarity
-    if average_compound_score >= 0.05:
-        overall_score = 'positive'
-    elif average_compound_score <= -0.05:
-        overall_score = 'negative'
-    else:
-        overall_score = 'neutral'
-
-    combined_triplets = [{'href': link, 'title': title, 'score': score, 'info': info, 'date' : date} for link, title, score, info, date in zip(article_links, article_titles, scores_list, article_publishers, article_dates)]
-
-    # Assuming mean_neg, mean_neu, mean_pos, and average_compound_score are potentially nullable variables
-
-# Using conditional assignment to set variables to 0 if they are None
-    mean_pos = mean_pos if not np.isnan(mean_pos) else 0
-    mean_neg = mean_neg if not np.isnan(mean_neg) else 0
-    mean_neu = mean_neu if not np.isnan(mean_neu) else 0
-    average_compound_score = average_compound_score if not np.isnan(average_compound_score) else 0
-    
     return jsonify({
         'Stock' : stock_ticker,
         'Value' : current_value,
