@@ -102,25 +102,8 @@ def get_recommendations():
         return [ticker, info['currentPrice']]
     
     def get_change(ticker):
-        stock = yf.Ticker(ticker)
         
-        # Get the intraday data for the current day
-        intraday_data = stock.history(period='1d', interval='1m')
-
-        # Access the most recent closing price (current value)
-        current_value = intraday_data['Close'].iloc[-1]
-
-        # Access the closing price from yesterday (second-to-last data point)
-        historical_data = stock.history(period='2d', interval='1d')
-        yesterday_close = historical_data['Close'].iloc[-2]
-
-        # Calculate the change in dollars
-        change_in_dollars = current_value - yesterday_close
-
-        # Calculate the percent change
-        percent_change = (change_in_dollars / yesterday_close) * 100
-        
-        return change_in_dollars, percent_change
+        return 0, 0
     
     
     # Printing out the array of arrays received from the URL
@@ -174,8 +157,9 @@ def get_recommendations():
     print(stock_info_array)
 
     # Return the array of arrays for the closest stocks
-    return stock_info_array
-    
+    return jsonify(stock_info_array)
+
+
 @app.route('/SingleRecommendation', methods=['GET'])
 def get_SingleRecommendations():
     def calculate_sector_distribution(stock_list):
