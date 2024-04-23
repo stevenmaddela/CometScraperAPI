@@ -82,7 +82,7 @@ def get_stock_info():
  
 @app.route('/recommendations', methods=['GET'])
 def get_recommendations():
-    def pick_stocks_based_on_distribution(total_stocks=100, existing_stocks=[]):
+    def pick_stocks_based_on_distribution(total_stocks=20, existing_stocks=[]):
         picked_stocks = []
 
         # Read all stocks from StockInfo.txt
@@ -128,10 +128,10 @@ def get_recommendations():
 
     stats_array = []
 
-    # Fetch stats for the picked stocks using multithreading
-    with ThreadPoolExecutor() as executor:
-        for stats in executor.map(get_stats, picked_stocks):
-            stats_array.append(stats)
+    # Fetch stats for each picked stock individually
+    for stock in picked_stocks:
+        stats = get_stats(stock)
+        stats_array.append(stats)
 
     # Sort the stats_array based on the absolute difference between each stock's price and the average_price
     sorted_stats = sorted(stats_array, key=lambda x: abs(x[1] - average_price))
@@ -158,7 +158,7 @@ def get_recommendations():
 
     # Return the array of arrays for the closest stocks
     return jsonify(stock_info_array)
-
+    
 
 @app.route('/SingleRecommendation', methods=['GET'])
 def get_SingleRecommendations():
