@@ -238,7 +238,7 @@ def get_SingleRecommendations():
 
         return sector_distribution, sector_info
 
-    def pick_stocks_based_on_distribution(sector_distribution, total_stocks=20, existing_stocks=[]):
+    def pick_stocks_based_on_distribution(sector_distribution, total_stocks=40, existing_stocks=[]):
         picked_stocks = []
 
         # Pick stocks based on sector distribution percentages
@@ -401,6 +401,61 @@ def get_sentiment():
     article_publishers = []
     article_dates = []
     articleCt = 0
+
+    if(len(news_articles) > 1):
+
+        for i, article in enumerate(news_articles):
+            if i >= 15:
+                break
+
+            try:
+                # Fetch the article content using requests and BeautifulSoup
+                response = requests.get(article['link'])
+                soup = BeautifulSoup(response.text, 'html.parser')
+
+                # Find and print the article body text
+                article_body = soup.find('div', class_='caas-body')
+                if article_body:
+                    article_title = article['title']
+                    article_text = article_body.get_text()
+                    article_texts.append((article_title, article_text))
+                    articleCt = articleCt + 1
+                    article_links.append(article['link'])
+                    article_publishers.append(article['publisher'])
+                    providerpublishtime = datetime.utcfromtimestamp( article['providerPublishTime'])
+                    current_time = datetime.utcnow()
+                    time_difference = current_time - providerpublishtime
+
+                    # If the article was published on the same day, display the time in hours
+                    if time_difference.days == 0:
+                        hours_ago = time_difference.seconds // 3600  # Convert seconds to hours
+                        if hours_ago == 0:
+                            # If less than an hour ago, calculate and display minutes
+                            minutes_ago = (time_difference.seconds % 3600) // 60
+                            if minutes_ago == 0:
+                                formatted_time = "Just now"
+                            elif minutes_ago == 1:
+                                formatted_time = "1 minute ago"
+                            else:
+                                formatted_time = f"{minutes_ago} minutes ago"
+                        elif hours_ago == 1:
+                            formatted_time = "1 hour ago"
+                        else:
+                            formatted_time = f"{hours_ago} hours ago"
+                    elif time_difference.days == 1:
+                        formatted_time = "1 day ago"
+                    else:
+                        # If not the same day, display days
+                        formatted_time = f"{time_difference.days} days ago"
+
+                    article_dates.append(formatted_time)
+                    #print("-" * 50)
+                else:
+                    print("Article body not found on the page.")
+
+            except Exception as e:
+                print(f"Error processing article: {str(e)}")
+
 
     nltk.download('vader_lexicon')
     vader = SentimentIntensityAnalyzer() # or whatever you want to call it
