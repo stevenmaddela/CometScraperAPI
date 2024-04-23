@@ -389,7 +389,8 @@ def get_sentiment():
     article_dates = []
     articleCt = 0
 
-    
+    nltk.download('vader_lexicon')
+    vader = SentimentIntensityAnalyzer() # or whatever you want to call it
 
     
     return jsonify({
