@@ -109,19 +109,22 @@ def get_recommendations():
 
     def pick_stocks_based_on_distribution(sector_distribution, total_stocks=100, existing_stocks=[]):
         picked_stocks = []
-        num_stocks = 0;
+    
         # Pick stocks based on sector distribution percentages
         for sector, percentage in sector_distribution.items():
             num_stocks = int(total_stocks * (percentage / 100))
             with open(file_path, 'r') as file:
                 stocks_in_sector = [line.split(", ")[0] for line in file if line.strip().endswith(sector)]
-                
+            
                 # Exclude stocks that are already in existing_stocks
                 filtered_stocks = [stock for stock in stocks_in_sector if stock not in existing_stocks]
-                
-                picked_stocks.extend(random.sample(filtered_stocks, min(num_stocks, len(filtered_stocks))))
-
-        return num_stocks
+            
+                # Randomly sample stocks from the filtered list
+                if filtered_stocks:
+                    picked_stocks.extend(random.sample(filtered_stocks, min(num_stocks, len(filtered_stocks))))
+    
+        # Return a default value if picked_stocks is empty
+        return picked_stocks or ["No stocks picked"]
 
 
     def get_stats(ticker):
