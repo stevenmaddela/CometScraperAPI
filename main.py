@@ -109,7 +109,6 @@ def get_recommendations():
 
     def pick_stocks_based_on_distribution(sector_distribution, total_stocks=100, existing_stocks=[]):
         picked_stocks = []
-        filtered_stocks = []
         # Pick stocks based on sector distribution percentages
         for sector, percentage in sector_distribution.items():
             num_stocks = int(total_stocks * (percentage / 100))
@@ -121,7 +120,7 @@ def get_recommendations():
                 
                 picked_stocks.extend(random.sample(filtered_stocks, min(num_stocks, len(filtered_stocks))))
 
-        return filtered_stocks
+        return picked_stocks
 
 
     def get_stats(ticker):
@@ -209,7 +208,7 @@ def get_recommendations():
 
     # Return the array of arrays for the closest stocks
     return jsonify({
-        'Array' : pick_stocks_based_on_distribution(sector_distribution),
+        'Array' : calculate_sector_distribution(stock_list),
     }
     )
 
