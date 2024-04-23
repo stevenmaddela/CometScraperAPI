@@ -98,8 +98,13 @@ def get_recommendations():
         return picked_stocks
 
     def get_stats(ticker):
-        info = yf.Tickers(ticker).tickers[ticker].info
-        return [ticker, info['currentPrice']]
+        stock = yf.Ticker(ticker)
+        # Get the intraday data for the current day
+        intraday_data = stock.history(period='1d', interval='1m')
+
+        # Access the most recent closing price (current value)
+        current_value = intraday_data['Close'].iloc[-1]
+        return [ticker, current_value]
     
     def get_change(ticker):
         
