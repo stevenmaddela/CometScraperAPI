@@ -219,7 +219,7 @@ def get_SingleRecommendations():
         sector_info = {}
 
         # Read sector information from StockInfo.txt
-        with open(file_path, 'r') as file:
+        with open("StockInfo.txt", "r") as file:
             for line in file:
                 parts = line.strip().split(", ")
                 if len(parts) >= 3:
@@ -238,13 +238,13 @@ def get_SingleRecommendations():
 
         return sector_distribution, sector_info
 
-    def pick_stocks_based_on_distribution(sector_distribution, total_stocks=30, existing_stocks=[]):
+    def pick_stocks_based_on_distribution(sector_distribution, total_stocks=20, existing_stocks=[]):
         picked_stocks = []
 
         # Pick stocks based on sector distribution percentages
         for sector, percentage in sector_distribution.items():
             num_stocks = int(total_stocks * (percentage / 100))
-            with open(file_path, 'r') as file:
+            with open("StockInfo.txt", "r") as file:
                 stocks_in_sector = [line.split(", ")[0] for line in file if line.strip().endswith(sector)]
                 
                 # Exclude stocks that are already in existing_stocks
@@ -255,8 +255,13 @@ def get_SingleRecommendations():
         return picked_stocks
 
     def get_stats(ticker):
-        info = yf.Tickers(ticker).tickers[ticker].info
-        return [ticker, info['currentPrice']]
+        stock = yf.Ticker(ticker)
+        # Get the intraday data for the current day
+        intraday_data = stock.history(period='1d', interval='1m')
+
+        # Access the most recent closing price (current value)
+        current_value = intraday_data['Close'].iloc[-1]
+        return [ticker, current_value]
     
     def get_change(ticker):
         stock = yf.Ticker(ticker)
@@ -292,7 +297,7 @@ def get_SingleRecommendations():
     total_stocks = len(FullStock_list)
 
     # Calculate the average price
-    average_price = total_price / total_stocks if total_price / total_stocks != 0 else 1
+    average_price = total_price / total_stocks
 
     # Calculate sector distribution and sector information
     sector_distribution, sector_info = calculate_sector_distribution(stock_list)
@@ -305,10 +310,11 @@ def get_SingleRecommendations():
 
     stats_array = []
 
-    # Fetch stats for the picked stocks using multithreading
-    with ThreadPoolExecutor() as executor:
-        for stats in executor.map(get_stats, picked_stocks):
-            stats_array.append(stats)
+    # Fetch stats for each picked stock individually
+    for stock in picked_stocks:
+        stats = get_stats(stock)
+        stats_array.append(stats)
+
 
     # Sort the stats_array based on the absolute difference between each stock's price and the average_price
     sorted_stats = sorted(stats_array, key=lambda x: abs(x[1] - average_price))
