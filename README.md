@@ -33,12 +33,6 @@ Backend
   </a>
 </p>
 
-Frontend
-<p align="left">
-  <a href="https://skillicons.dev">
-    <img src="https://skillicons.dev/icons?i=js,react,tailwind,materialui" />
-  </a>
-</p>
 
 Database
 <p align="left">
@@ -47,12 +41,6 @@ Database
   </a>
 </p>
 
-Cloud Servers
-<p align="left">
-  <a href="https://skillicons.dev">
-    <img src="https://skillicons.dev/icons?i=firebase,vercel" />
-  </a>
-</p>
 
 Tools
 <p align="left">
