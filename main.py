@@ -451,7 +451,8 @@ def get_sentiment():
 
             except Exception as e:
                 print(f"Error processing article: {str(e)}")
-
+                
+    nltk.download('vader_lexicon')
     vader = SentimentIntensityAnalyzer() # or whatever you want to call it
 
     data = []
