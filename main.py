@@ -21,7 +21,7 @@ from flask_cors import CORS
 base_dir = os.path.dirname(os.path.abspath(__file__))
 file_path = os.path.join(base_dir, 'StockInfo.txt')
 
-# Construct a path to the StockInfo.txt file
+# Construct the path to the StockInfo.txt file
 
 # Initialize the Flask app and enable CORS
 app = Flask(__name__)
