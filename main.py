@@ -14,7 +14,7 @@ from datetime import datetime
 import random
 import time
 import json
-import numpy as np  # Import numpy library
+import numpy as np  # Import the numpy library
 import os
 from flask_cors import CORS
 
