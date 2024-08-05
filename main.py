@@ -29,25 +29,58 @@ CORS(app, resources={r"*": {"origins": "*"}})
 
 @app.route('/trending', methods=['GET'])
 def get_trending():
-    url = 'https://finance.yahoo.com/gainers'
+    def get_yahoo_finance_data(url):
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Debug: Print the response status and URL
+        print(f"Fetching data from: {url} - Status Code: {response.status_code}")
+        
+        if response.status_code == 200:
+            # Find all links within the table rows
+            links = soup.select('#fin-scr-res-table a')
+            print(f"Number of links found: {len(links)}")
+            
+            if not links:
+                print("No links found on the page.")
+                return []
 
-    trendingArray = []
-    ytext = requests.get(url).text
-    yroot = lxml.html.fromstring(ytext)
-    for x in yroot.xpath('//*[@id="fin-scr-res-table"]//a'):
-        trendingArray.append(x.attrib['href'].split("/")[-1].split("?")[0])
+            data_array = []
+            for link in links:
+                # Extract the symbol using more robust parsing
+                href = link.get('href')
+                if href:
+                    parts = href.split('/')
+                    if len(parts) > 2:
+                        symbol = parts[2]  # Assuming the symbol is the third part in the href
+                        data_array.append(symbol)
+                    else:
+                        print(f"Unexpected href format: {href}")
+                else:
+                    print("No href found in link.")
+                
+            return data_array
+        else:
+            print(f"Failed to retrieve data: {response.status_code}")
+            return []
 
-    url2 = 'https://finance.yahoo.com/losers'
+    # URL for top gainers and top losers
+    url_gainers = 'https://finance.yahoo.com/gainers'
+    url_losers = 'https://finance.yahoo.com/losers'
 
-    losingArray = []
-    ytext = requests.get(url2).text
-    yroot = lxml.html.fromstring(ytext)
-    for x in yroot.xpath('//*[@id="fin-scr-res-table"]//a'):
-        losingArray.append(x.attrib['href'].split("/")[-1].split("?")[0])
+    # Fetch data
+    top_gainers = get_yahoo_finance_data(url_gainers)
+    top_losers = get_yahoo_finance_data(url_losers)
+
+    print("Top Gainers:", top_gainers)
+    print("Top Losers:", top_losers)
 
     return jsonify({
-        'Trending' : trendingArray,
-        'Losing' : losingArray
+        'Trending': top_gainers,
+        'Losing': top_losers
     })
 
 
